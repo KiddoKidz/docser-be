@@ -1,0 +1,22 @@
+[flake8]
+ignore = D203
+exclude =
+  .git,
+  .gitignore,
+  .gitlab-ci.yml,
+  .coverage,
+  .coveragerc,
+  db.sqlite3,
+  Dockerfile,
+  heroku.yml,
+  README.md,
+  release-task.sh,
+  requirements.txt,
+  sonar-project.properties,
+  __pycache__,
+  migrations,
+  venv,
+  api/tests.py
+max-complexity = 10
+max-line-length = 88
+extend-ignore = E203, W503

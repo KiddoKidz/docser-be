@@ -1,0 +1,27 @@
+FROM python:3.9-slim
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV DEBUG 1
+ENV ALLOWED_HOSTS localhost 127.0.0.1 0.0.0.0
+ENV ALLOWED_DOMAINS sirclo.co.id sirclo.com icube.us orami.com mail.sirclo.com
+ENV FRONTEND_URL http://localhost:3000/
+ENV SSL_REQUIRE 0
+
+COPY ./requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+
+RUN python3 manage.py collectstatic --noinput
+
+RUN python3 manage.py createcachetable
+RUN python3 manage.py makemigrations
+RUN python3 manage.py migrate
+
+RUN useradd -ms /bin/bash user_admin
+USER user_admin
+
+CMD gunicorn be_docser.wsgi:application --bind 0.0.0.0:$PORT
