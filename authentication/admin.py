@@ -45,3 +45,4 @@ class CustomUserAdmin(UserAdmin):
 
 # Register your models here.
 admin.site.register(models.CustomUser, CustomUserAdmin)
+admin.site.register(models.UserOAuth2Credentials)

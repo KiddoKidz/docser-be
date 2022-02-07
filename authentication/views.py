@@ -12,6 +12,7 @@ from rest_framework import permissions, status
 from rest_framework.authtoken.views import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 
 from api.tasks import update_files_to_meili
 from api.utils import get_meili_client, setup_meili_indexes
@@ -127,6 +128,17 @@ class UserInfo(APIView):
                     user_data["first_name"], user_data["last_name"]
                 ),
                 "picture_url": user_data["picture_url"],
+                "is_admin": user_data["email"] == settings.EMAIL_ADMIN,
             },
             status=status.HTTP_200_OK,
         )
+
+
+class RefreshDocSerData(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        if is_admin_credentials_exists():
+            update_files_to_meili.delay()
+
+        return Response(data={"detail": "DocSer's data is being refreshed!"})

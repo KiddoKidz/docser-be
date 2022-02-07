@@ -37,3 +37,30 @@ class FileLocationSearchSerializer(serializers.Serializer):
 
 class FileOwnerSearchSerializer(serializers.Serializer):
     q = serializers.CharField(allow_blank=True, required=False, default="")
+
+
+class TOCUploadSerializer(serializers.Serializer):
+    file = serializers.FileField()
+
+
+class TOCDataSearchSerializer(serializers.Serializer):
+    q = serializers.CharField(allow_blank=True, required=False, default="")
+
+
+class TOCHomepageSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    icon_url = serializers.URLField()
+    category = serializers.CharField(max_length=255)
+    description = serializers.CharField(max_length=255)
+    data = serializers.SerializerMethodField()
+
+    def get_data(self, obj):
+        data = []
+        for i in range(1, 4):
+            data.append(
+                {
+                    "title": getattr(obj, f"data{i}_title"),
+                    "url": getattr(obj, f"data{i}_url"),
+                }
+            )
+        return data
