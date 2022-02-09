@@ -27,13 +27,11 @@ SECRET_KEY = os.environ.get(
     "SECRET_KEY", default="yyrk1!m59g$)-@kzy4ei16ek!6ta36t12-a13+08)4v@ez^qk%"
 )
 
-MEILI_MASTER_KEY = os.environ.get(
-    "MEILI_MASTER_KEY", default="hY3l3WZYAE0jHb3PQMQIhXqW11kBsT6914xXHv01"
-)
+MEILI_MASTER_KEY = os.environ.get("MEILI_MASTER_KEY", default="")
 
 MEILI_HOST = os.environ.get("MEILI_HOST", default="http://ms:7700")
 
-MEILI_DEFAULT_INDEXES = ["files", "file_locations", "file_owners"]
+MEILI_DEFAULT_INDEXES = ["files", "file_locations", "file_owners", "toc_data"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.environ.get("DEBUG", default=1)))
@@ -43,16 +41,18 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", default="localhost 127.0.0.1").s
 )
 
 ALLOWED_DOMAINS = os.environ.get(
-    "ALLOWED_DOMAINS", default="sirclo.co.id sirclo.com icube.us orami.com mail.sirclo.com"
+    "ALLOWED_DOMAINS",
+    default="sirclo.co.id sirclo.com icube.us orami.com mail.sirclo.com",
 ).split(" ")
 
-CORS_ALLOWED_ORIGINS = "https://docser.srcli.xyz.dmmy.me/".split(" ")
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    "FRONTEND_URL", default="https://docser.srcli.xyz.dmmy.me/"
+).split(" ")
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = str(DEBUG)
 
 # if not DEBUG:
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-CORS_ALLOWED_ORIGINS = "https://docser.srcli.xyz.dmmy.me/".split(" ")
 
 # Application definition
 
@@ -132,8 +132,8 @@ AUTH_USER_MODEL = "authentication.CustomUser"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.\
-        UserAttributeSimilarityValidator",
+        "NAME": "django.contrib.auth.password_validation."
+        + "UserAttributeSimilarityValidator",
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",

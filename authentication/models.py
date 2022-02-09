@@ -48,4 +48,4 @@ class UserOAuth2Credentials(models.Model):
     credentials = models.TextField()
 
     def __str__(self):
-        return self.user.email + "Credentials"
+        return self.user.email + " Credentials"

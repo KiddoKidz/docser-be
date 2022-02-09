@@ -5,22 +5,22 @@ services:
     image: rabbitmq:3-management-alpine
     hostname: "my-rabbit"
     restart: unless-stopped
-    ports: 
+    ports:
       - 5672:5672
       - 15672:15672
   ms:
-    image: getmeili/meilisearch:latest
+    image: getmeili/meilisearch:v0.19.0
     restart: unless-stopped
     ports:
       - 7700:7700
-    environment: 
+    environment:
       - MEILI_MASTER_KEY=hY3l3WZYAE0jHb3PQMQIhXqW11kBsT6914xXHv01
   db:
-    image: postgres:latest
+    image: postgres:11
     restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    environment: 
+    environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -38,10 +38,11 @@ services:
     volumes:
       - .:/app
       - staticfile:/app/staticfiles
-    environment: 
+    environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
       - SSL_REQUIRE=0
-    depends_on: 
+      - MEILI_MASTER_KEY=hY3l3WZYAE0jHb3PQMQIhXqW11kBsT6914xXHv01
+    depends_on:
       - db
       - ms
       - rabbitmq
@@ -49,24 +50,25 @@ services:
     restart: unless-stopped
     image: be-docser_worker:latest
     build:
-        context: .
-        dockerfile: Dockerfile.worker
+      context: .
+      dockerfile: Dockerfile.worker
     links:
       - db:db
     volumes:
       - .:/app
       - staticfile:/app/staticfiles
-    environment: 
+    environment:
       - DATABASE_URL=postgres://postgres:postgres@db:5432/postgres
       - SSL_REQUIRE=0
-    depends_on: 
+      - MEILI_MASTER_KEY=hY3l3WZYAE0jHb3PQMQIhXqW11kBsT6914xXHv01
+    depends_on:
       - db
       - ms
       - web
       - rabbitmq
 
 volumes:
-  staticfile:
-  postgres_data:
-  rabbitmq_data:
-  rabbitmq_logs:
+  staticfile: null
+  postgres_data: null
+  rabbitmq_data: null
+  rabbitmq_logs: null

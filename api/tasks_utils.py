@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.cache import cache
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import HttpError, build
+from pdfminer.pdfdocument import PDFEncryptionError
 
 from authentication.models import UserOAuth2Credentials
 
@@ -142,11 +143,11 @@ def cleaning_files_data(folders, files, all_owner):
 
         file_sharer = file.pop("sharingUser", {})
 
-        if file_sharer and file_sharer.get('emailAddress', None) is not None:
+        if file_sharer and file_sharer.get("emailAddress", None) is not None:
             current_owners[file_sharer["emailAddress"]] = file_sharer["displayName"]
 
         for file_owner in file.get("owners", []):
-            if file_owner.get('emailAddress', None) is not None:
+            if file_owner.get("emailAddress", None) is not None:
                 current_owners[file_owner["emailAddress"]] = file_owner["displayName"]
 
         file["owners"] = list(current_owners.values())
@@ -157,22 +158,13 @@ def cleaning_files_data(folders, files, all_owner):
                 parent_folder_name = folder["name"]
                 file["location"].extend(folder["location"][::-1] + [parent_folder_name])
                 file["locationLink"].update(folder["locationLink"])
-                file["locationLink"][parent_folder_name] = [
-                    *file["locationLink"].get(parent_folder_name, []),
-                    folder["webViewLink"],
-                ]
+                file["locationLink"][parent_folder_name] = folder["webViewLink"]
         file.pop("parents", None)
 
         is_shared = file.get("shared", False)
         file["location"].insert(0, "Shared" if is_shared else "My Drive")
 
-        file["locationLink"][file["location"][0]] = [
-            *file["locationLink"].get(file["location"][0], []),
-            None,
-        ]
-
-        for name, links in file["locationLink"].items():
-            file["locationLink"][name] = links[::-1]
+        file["locationLink"][file["location"][0]] = ""
 
 
 def update_current_folder_data(current_folder, parent_folder):
@@ -182,16 +174,10 @@ def update_current_folder_data(current_folder, parent_folder):
         [parent_folder_name] + parent_folder.get("location", [])
     )
 
-    current_folder["locationLink"][parent_folder_name] = [
-        *current_folder["locationLink"].get(parent_folder_name, []),
-        parent_folder["webViewLink"],
-    ]
+    current_folder["locationLink"][parent_folder_name] = parent_folder["webViewLink"]
 
     for name, link in parent_folder.get("locationLink", {}).items():
-        current_folder["locationLink"][name] = [
-            *current_folder["locationLink"].get(name, []),
-            link,
-        ]
+        current_folder["locationLink"][name] = link
 
     current_folder["parents"].extend(parent_folder["parents"])
 
@@ -250,6 +236,8 @@ def fetch_files_content(drive_service, files):
                         if not isinstance(extracted_text, type(None)):
                             file["content"] += extracted_text
         except HttpError:
+            pass
+        except PDFEncryptionError:
             pass
         file["content"] = re.sub(
             r"[^\w!\#\$%\&'\*\+\-\.\^_`\|\~:;,\[\]\(\)@\"\{\}<>/=\+]",
