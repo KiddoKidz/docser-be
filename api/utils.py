@@ -116,10 +116,7 @@ def cleaning_folders_data_toc(folders):
             for folder in folders:
                 if folder["code"] == current_folder["parents"][i]:
                     update_current_folder_data_toc(current_folder, folder)
-                    if len(folder["parents"]) > 0:
-                        i += len(folder["parents"])
-                    else:
-                        i += 1
+                    i += len(folder["parents"])
 
             if current_total_parents == len(current_folder["parents"]):
                 break

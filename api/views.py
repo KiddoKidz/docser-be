@@ -1,3 +1,4 @@
+import csv
 from sys import maxsize
 from uuid import uuid1
 
@@ -153,11 +154,11 @@ class TOCDataUploadView(APIView):
                 status=HTTP_400_BAD_REQUEST,
             )
 
-        file_data = uploaded_file.read().decode("utf-8")
+        splitted_file_data_by_newline = (
+            uploaded_file.read().decode("utf-8").splitlines()
+        )
 
-        splitted_file_data_by_newline = file_data.split("\r\n")
-
-        file_data_columns_title = splitted_file_data_by_newline.pop(0).split(",")
+        file_data_columns_title = splitted_file_data_by_newline[0].split(",")
         if len(file_data_columns_title) != toc_data_columns:
             return Response(
                 data={
@@ -170,23 +171,27 @@ class TOCDataUploadView(APIView):
                 status=HTTP_400_BAD_REQUEST,
             )
 
+        reader = csv.DictReader(splitted_file_data_by_newline, delimiter=",")
+
         cleaned_data = []
 
-        for row in splitted_file_data_by_newline:
-            cols = row.split(",")
-            if len(cols) != toc_data_columns:
-                continue
-
-            cleaned_data.append(
-                {
-                    "id": str(uuid1()),
-                    "code": cols[0],
-                    "name": cols[1],
-                    "parents": [cols[2]] if cols[2] != "" else [],
-                    "url": cols[3],
-                    "type": str(cols[4]).lower(),
-                }
-            )
+        for row in reader:
+            code = row.get("CODE", "")
+            name = row.get("NAME", "")
+            parent = row.get("PARENT", "")
+            url = row.get("URL", "")
+            type = row.get("TYPE", "")
+            if code:
+                cleaned_data.append(
+                    {
+                        "id": str(uuid1()),
+                        "code": code,
+                        "name": name,
+                        "parents": [parent] if parent != "" else [],
+                        "url": url,
+                        "type": type.lower(),
+                    }
+                )
 
         processing_files_and_folders_toc(cleaned_data)
 
