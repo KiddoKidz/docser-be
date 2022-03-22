@@ -1,3 +1,4 @@
+from time import sleep
 import meilisearch
 from django.conf import settings
 from rest_framework.response import Response
@@ -148,6 +149,12 @@ def sync_to_meili_toc(cleaned_files, cleaned_folders):
     meili_client.index("toc_data").delete_all_documents()
     meili_client.index("toc_data").add_documents(cleaned_files)
     meili_client.index("toc_data").add_documents(cleaned_folders)
+
+    while True:
+        meili_stats = meili_client.index("toc_data").get_stats()
+        if not meili_stats["isIndexing"]:
+            break
+        sleep(1)
 
 
 def processing_files_and_folders_toc(files_and_folders):
